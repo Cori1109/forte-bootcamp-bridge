@@ -1,0 +1,87 @@
+version: "3"
+
+services:
+
+  # ----------------------------------------------------------------------------
+  # Setup the local postgres database.
+  #
+  postgres:
+    image: postgres:alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - "pg_data:/data"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      close:
+        aliases:
+          - postgres
+
+
+  # ----------------------------------------------------------------------------
+  # Setup the local redis server.
+  #
+  redis:
+    image: redis:alpine
+    hostname: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - "redis_data:/data"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+    networks:
+      close:
+        aliases:
+          - redis
+  
+  # ----------------------------------------------------------------------------
+  # Setup the local application instance. Please relapce project-name bellow
+  # with the name of your actual project in the image string.
+  #
+  app:
+    build: .
+    image: bootcamp-bridge/project-name:latest
+    ports:
+      - "4000:4000"
+    volumes:
+      - "app_data:/app"
+    environment:
+      ECTO_HOST: "postgres"
+      ECTO_DB: "heimdall_dev"
+      ECTO_USER: "postgres"
+      ECTO_PASS: "postgres"
+      ECTO_PORT: "5432"
+      ECTO_POOL_SIZE: "1"
+      REDIS_HOST: "redis://redis:6739/0"
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --silent --fail localhost:4000/ || exit 1" ]
+      interval: 5s
+      timeout: 3s
+      start_period: 5s
+      retries: 10
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+
+networks:
+  open:
+    driver: bridge
+  close:
+    driver: bridge
+
+volumes:
+  redis_data:
+  pg_data:
+  app_data:
