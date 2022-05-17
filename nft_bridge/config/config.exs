@@ -16,7 +16,8 @@ config :nft_bridge, NftBridgeWeb.Endpoint,
   secret_key_base: "X5ZEwFGR4Z02vG2QRTDQt7hY+Tp6Shn1G+XeBROkjI4Fvbv0GHwgbpAVFamDMibo",
   render_errors: [view: NftBridgeWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: NftBridge.PubSub,
-  live_view: [signing_salt: "FOp0MFcl"]
+  live_view: [signing_salt: "FOp0MFcl"],
+  custodial_wallet_address: "Dph3pc4ip7HnGYB9dB5hjYqqaQhzWqwGePBqsMA1BXzH"
 
 # Configures Elixir's Logger
 config :logger, :console,
