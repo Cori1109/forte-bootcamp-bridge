@@ -1,6 +1,24 @@
 version: "3"
 
+x-common-variables: &common-variables
+  POSTGRES_DB: bridge_db
+  POSTGRES_TEST_DB: bridge_test_db
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_PORT: 5432
+  POSTGRES_HOST: db
+  REDIS_HOST: redis
+
 services:
+  db:
+    container_name: nftbridge_db
+    image: postgres:14
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres-storage:/var/lib/postgresql/data
+    environment: *common-variables
+    restart: unless-stopped
 
   # ----------------------------------------------------------------------------
   # Setup the local postgres database.
@@ -15,7 +33,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,19 +42,21 @@ services:
         aliases:
           - postgres
 
-
   # ----------------------------------------------------------------------------
   # Setup the local redis server.
   #
   redis:
-    image: redis:alpine
+    container_name: nftbridge_cache
+    depends_on:
+      - db
+    image: redis:latest
     hostname: redis
     ports:
       - "6379:6379"
     volumes:
       - "redis_data:/data"
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 1s
       timeout: 3s
       retries: 30
@@ -44,28 +64,32 @@ services:
       close:
         aliases:
           - redis
-  
+    restart: unless-stopped
+    command: redis-server
+
   # ----------------------------------------------------------------------------
   # Setup the local application instance. Please relapce project-name bellow
   # with the name of your actual project in the image string.
   #
   app:
-    build: .
+    container_name: nftbridge_app
+    build:
+      context: .
+    depends_on:
+      - db
+      - redis
     image: bootcamp-bridge/project-name:latest
     ports:
       - "4000:4000"
     volumes:
-      - "app_data:/app"
+      - ".:/app"
     environment:
-      ECTO_HOST: "postgres"
-      ECTO_DB: "heimdall_dev"
-      ECTO_USER: "postgres"
-      ECTO_PASS: "postgres"
-      ECTO_PORT: "5432"
-      ECTO_POOL_SIZE: "1"
-      REDIS_HOST: "redis://redis:6739/0"
+      <<: *common-variables
+      MIX_ENV: dev
+    stdin_open: true
+    command: ["bash", "tmp/server_init.sh"]
     healthcheck:
-      test: [ "CMD-SHELL", "curl --silent --fail localhost:4000/ || exit 1" ]
+      test: ["CMD-SHELL", "curl --silent --fail localhost:4000/ || exit 1"]
       interval: 5s
       timeout: 3s
       start_period: 5s
