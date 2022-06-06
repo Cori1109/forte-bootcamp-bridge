@@ -1,6 +1,13 @@
 defmodule NftBridge.Metadata do
 
-  defstruct [:update_authority, :mint, :primary_sale_happened, :is_mutable, :editionNonce, :tokenStandard,
+  # Metaplex metadata parser
+  # based on
+  # https://github.com/michaelhly/solana-py/issues/48#issuecomment-1073077165
+  # and
+  # https://github.com/metaplex-foundation/metaplex-program-library/blob/master/token-metadata/program/src/state.rs
+
+
+  defstruct [:update_authority, :mint, :primary_sale_happened, :is_mutable, :editionNonce, :tokenStandard, :collection, :uses,
    data: { :name, :symbol, :uri, :seller_fee_basis_points, :creators }]
 
   def parse(<<0x04,
@@ -30,6 +37,15 @@ defmodule NftBridge.Metadata do
         uri: parse_string(uri),
         seller_fee_basis_points: fee,
         creators: []
+      },
+      collection: %{
+        verified: -1,
+        key: ""
+      },
+      uses: %{
+        useMethod: -1,
+        remaining: -1,
+        total: -1
       }
     }
 
@@ -86,66 +102,56 @@ defmodule NftBridge.Metadata do
         is_mutable: is_mutable,
      })
      else
-      %{ metadata | primary_sale_happened: primary_sale_happened,
-          is_mutable: is_mutable,
-       }
+      << has_collection :: little-integer-size(8),
+        temp2 :: binary >> = temp
+
+      if has_collection == 1 do
+        parse_collection(temp2, %{ metadata | primary_sale_happened: primary_sale_happened,
+        is_mutable: is_mutable})
+      else
+        %{ metadata | primary_sale_happened: primary_sale_happened,
+        is_mutable: is_mutable}
+      end
      end
     end
   end
 
   defp parse_edition_nonce(<<
-      edition_nonce :: little-integer-size(8),
-      has_token_standard :: little-integer-size(8),
-      rest :: binary >>,  metadata) do
+    edition_nonce :: little-integer-size(8),
+    has_token_standard :: little-integer-size(8),
+    rest :: binary >>,  metadata) do
 
-      if has_token_standard == 1 do
-        parse_token_standard(rest, %{ metadata | editionNonce: edition_nonce})
-      else
-        %{ metadata | editionNonce: edition_nonce}
-      end
-  end
-
-  defp parse_token_standard(<<
-      tokenStandard :: little-integer-size(8),has_edition_nonce :: little-integer-size(8),
-      rest :: binary >> , metadata) do
-
-    if has_edition_nonce  == 1 do
-      metadata = parse_edition_nonce(rest , metadata)
-      %{ metadata | primary_sale_happened: primary_sale_happened,
-      is_mutable: is_mutable,
-     }
+    if has_token_standard == 1 do
+      parse_token_standard(rest, %{ metadata | editionNonce: edition_nonce})
     else
-     << has_token_standard :: little-integer-size(8),
+      << has_collection :: little-integer-size(8),
       temp :: binary >> = rest
 
-     if has_token_standard == 1 do
-        parse_token_standard(temp, %{ metadata | primary_sale_happened: primary_sale_happened,
-        is_mutable: is_mutable,
-     })
-     else
-      %{ metadata | primary_sale_happened: primary_sale_happened,
-          is_mutable: is_mutable,
-       }
-     end
-    end
-  end
-
-  defp parse_edition_nonce(<<
-      edition_nonce :: little-integer-size(8),
-      has_token_standard :: little-integer-size(8),
-      rest :: binary >>,  metadata) do
-
-      if has_token_standard == 1 do
-        parse_token_standard(rest, %{ metadata | editionNonce: edition_nonce})
+      if has_collection == 1 do
+        parse_collection(temp, %{ metadata | editionNonce: edition_nonce})
       else
         %{ metadata | editionNonce: edition_nonce}
       end
+    end
   end
 
   defp parse_token_standard(<<
       tokenStandard :: little-integer-size(8),
-      _rest :: binary >> , metadata) do
-    %{ metadata | tokenStandard: tokenStandard}
+      has_collection :: little-integer-size(8),
+      rest :: binary >>,  metadata) do
+
+    if has_collection == 1 do
+      parse_collection(rest, %{ metadata | tokenStandard: tokenStandard})
+    else
+      %{ metadata | tokenStandard: tokenStandard}
+    end
+  end
+
+  defp parse_collection(<<
+        verified :: little-integer-size(8),
+        key :: binary - size(32),
+        _rest :: binary >>, metadata) do
+    %{ metadata | collection: %{ verified: verified, key: B58.encode58(key)}}
   end
 
   defp parse_string(data) do
