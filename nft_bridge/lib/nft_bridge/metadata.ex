@@ -1,6 +1,6 @@
 defmodule NftBridge.Metadata do
 
-  defstruct [:update_authority, :mint, :primary_sale_happened, :is_mutable,
+  defstruct [:update_authority, :mint, :primary_sale_happened, :is_mutable, :editionNonce, :tokenStandard,
    data: { :name, :symbol, :uri, :seller_fee_basis_points, :creators }]
 
   def parse(<<0x04,
@@ -20,8 +20,10 @@ defmodule NftBridge.Metadata do
     metadata = %NftBridge.Metadata{
       update_authority: B58.encode58(source),
       mint: B58.encode58(mint),
-      primary_sale_happened: 0,
-      is_mutable: 0,
+      primary_sale_happened: -1,
+      is_mutable: -1,
+      editionNonce: -1,
+      tokenStandard: -1,
       data: %{
         name: parse_string(name),
         symbol: parse_string(symbol),
@@ -67,8 +69,83 @@ defmodule NftBridge.Metadata do
   defp parse_last_fields(<<
       primary_sale_happened :: little-integer-size(8),
       is_mutable :: little-integer-size(8),
+      has_edition_nonce :: little-integer-size(8),
+      rest :: binary >> , metadata) do
+
+    if has_edition_nonce  == 1 do
+      metadata = parse_edition_nonce(rest , metadata)
+      %{ metadata | primary_sale_happened: primary_sale_happened,
+      is_mutable: is_mutable,
+     }
+    else
+     << has_token_standard :: little-integer-size(8),
+      temp :: binary >> = rest
+
+     if has_token_standard == 1 do
+        parse_token_standard(temp, %{ metadata | primary_sale_happened: primary_sale_happened,
+        is_mutable: is_mutable,
+     })
+     else
+      %{ metadata | primary_sale_happened: primary_sale_happened,
+          is_mutable: is_mutable,
+       }
+     end
+    end
+  end
+
+  defp parse_edition_nonce(<<
+      edition_nonce :: little-integer-size(8),
+      has_token_standard :: little-integer-size(8),
+      rest :: binary >>,  metadata) do
+
+      if has_token_standard == 1 do
+        parse_token_standard(rest, %{ metadata | editionNonce: edition_nonce})
+      else
+        %{ metadata | editionNonce: edition_nonce}
+      end
+  end
+
+  defp parse_token_standard(<<
+      tokenStandard :: little-integer-size(8),has_edition_nonce :: little-integer-size(8),
+      rest :: binary >> , metadata) do
+
+    if has_edition_nonce  == 1 do
+      metadata = parse_edition_nonce(rest , metadata)
+      %{ metadata | primary_sale_happened: primary_sale_happened,
+      is_mutable: is_mutable,
+     }
+    else
+     << has_token_standard :: little-integer-size(8),
+      temp :: binary >> = rest
+
+     if has_token_standard == 1 do
+        parse_token_standard(temp, %{ metadata | primary_sale_happened: primary_sale_happened,
+        is_mutable: is_mutable,
+     })
+     else
+      %{ metadata | primary_sale_happened: primary_sale_happened,
+          is_mutable: is_mutable,
+       }
+     end
+    end
+  end
+
+  defp parse_edition_nonce(<<
+      edition_nonce :: little-integer-size(8),
+      has_token_standard :: little-integer-size(8),
+      rest :: binary >>,  metadata) do
+
+      if has_token_standard == 1 do
+        parse_token_standard(rest, %{ metadata | editionNonce: edition_nonce})
+      else
+        %{ metadata | editionNonce: edition_nonce}
+      end
+  end
+
+  defp parse_token_standard(<<
+      tokenStandard :: little-integer-size(8),
       _rest :: binary >> , metadata) do
-    %{ metadata | primary_sale_happened: primary_sale_happened, is_mutable: is_mutable}
+    %{ metadata | tokenStandard: tokenStandard}
   end
 
   defp parse_string(data) do
