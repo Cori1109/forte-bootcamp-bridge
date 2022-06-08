@@ -109,8 +109,16 @@ defmodule NftBridge.Metadata do
         parse_collection(temp2, %{ metadata | primary_sale_happened: primary_sale_happened,
         is_mutable: is_mutable})
       else
-        %{ metadata | primary_sale_happened: primary_sale_happened,
-        is_mutable: is_mutable}
+        << has_uses :: little-integer-size(8),
+          temp3 :: binary >> = temp2
+
+        if has_uses == 1 do
+          parse_uses(temp3, %{ metadata | primary_sale_happened: primary_sale_happened,
+          is_mutable: is_mutable})
+        else
+          %{ metadata | primary_sale_happened: primary_sale_happened,
+          is_mutable: is_mutable}
+        end
       end
      end
     end
@@ -130,7 +138,14 @@ defmodule NftBridge.Metadata do
       if has_collection == 1 do
         parse_collection(temp, %{ metadata | editionNonce: edition_nonce})
       else
-        %{ metadata | editionNonce: edition_nonce}
+        << has_uses :: little-integer-size(8),
+        temp2 :: binary >> = temp
+
+        if has_uses == 1 do
+          parse_uses(temp2, %{ metadata | editionNonce: edition_nonce})
+        else
+          %{ metadata | editionNonce: edition_nonce}
+        end
       end
     end
   end
@@ -143,7 +158,14 @@ defmodule NftBridge.Metadata do
     if has_collection == 1 do
       parse_collection(rest, %{ metadata | tokenStandard: tokenStandard})
     else
-      %{ metadata | tokenStandard: tokenStandard}
+      << has_uses :: little-integer-size(8),
+        temp :: binary >> = rest
+
+      if has_uses == 1 do
+        parse_uses(temp, %{ metadata | tokenStandard: tokenStandard})
+      else
+        %{ metadata | tokenStandard: tokenStandard}
+      end
     end
   end
 
@@ -151,7 +173,22 @@ defmodule NftBridge.Metadata do
         verified :: little-integer-size(8),
         key :: binary - size(32),
         _rest :: binary >>, metadata) do
-    %{ metadata | collection: %{ verified: verified, key: B58.encode58(key)}}
+        has_uses :: little-integer-size(8),
+        rest :: binary >>, metadata) do
+
+    if has_uses == 1 do
+      parse_uses(rest, %{ metadata | collection: %{ verified: verified, key: B58.encode58(key)}})
+    else
+      %{ metadata | collection: %{ verified: verified, key: B58.encode58(key)}}
+    end
+  end
+
+  defp parse_uses(<<
+        use_method :: little-integer-size(8),
+        remaining :: little-integer-size(64),
+        total :: little-integer-size(64),
+        _rest :: binary  >>, metadata) do
+    %{ metadata | uses: %{ useMethod: use_method, total: total, remaining: remaining}}
   end
 
   defp parse_string(data) do
