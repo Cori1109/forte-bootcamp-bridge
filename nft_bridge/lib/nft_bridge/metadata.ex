@@ -10,6 +10,15 @@ defmodule NftBridge.Metadata do
   defstruct [:update_authority, :mint, :primary_sale_happened, :is_mutable, :editionNonce, :tokenStandard, :collection, :uses,
    data: { :name, :symbol, :uri, :seller_fee_basis_points, :creators }]
 
+  @metadata_program_id "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+
+  def get_pda(id) do
+    program_id = Solana.Key.decode!(@metadata_program_id)
+    token_id = Solana.Key.decode!(id)
+    {:ok, address, _nonce} = Solana.Key.find_address(["metadata", program_id, token_id], program_id)
+    B58.encode58(address)
+  end
+
   def parse(<<0x04,
               source :: binary - size(32),
               mint :: binary - size(32),
@@ -172,7 +181,6 @@ defmodule NftBridge.Metadata do
   defp parse_collection(<<
         verified :: little-integer-size(8),
         key :: binary - size(32),
-        _rest :: binary >>, metadata) do
         has_uses :: little-integer-size(8),
         rest :: binary >>, metadata) do
 

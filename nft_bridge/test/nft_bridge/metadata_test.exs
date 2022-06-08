@@ -3,7 +3,7 @@ defmodule NftBridge.MetadataTest do
 
   alias NftBridge.Metadata
 
-  describe "metadata" do
+  describe "metadata parser" do
     import NftBridge.MetadataFixtures
 
     test "parse with one creator" do
@@ -53,7 +53,7 @@ defmodule NftBridge.MetadataTest do
       assert parsed.primary_sale_happened == 0
       assert parsed.is_mutable == 1
       assert parsed.editionNonce == 253
-      assert parsed.tokenStandard  = 1
+      assert parsed.tokenStandard  == 1
       assert parsed.collection.key == ""
       assert parsed.collection.verified == -1
       assert parsed.uses.useMethod == -1
@@ -293,6 +293,13 @@ defmodule NftBridge.MetadataTest do
       assert parsed.uses.useMethod == 2
       assert parsed.uses.remaining  == 32
       assert parsed.uses.total  == 48
+    end
+  end
+
+  describe "pda" do
+    test "get pda" do
+      pda = Metadata.get_pda("9bnSBxC8PQrzWCQ7nH3nrv96YaH34o39iaxN74q1reVG")
+      assert pda == "4t9YYr6Z3hi9jZkLu6QvXxSUzHhdJ4jmmm9hoU5QhnqY"
     end
   end
 end
