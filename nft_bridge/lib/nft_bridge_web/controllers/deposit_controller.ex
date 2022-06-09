@@ -1,21 +1,46 @@
 defmodule NftBridgeWeb.DepositController do
   use NftBridgeWeb, :controller
-  alias NftBridge.Tokens
+  require Logger
+  alias NftBridge.Deposits
+  alias NftBridge.Deposits.Record
+  alias NftBridgeWeb.Registry
+
+  @custodial_wallet "Dph3pc4ip7HnGYB9dB5hjYqqaQhzWqwGePBqsMA1BXzH"
 
   def deposit(conn, %{"data" => params }) do
-    valid_attrs = %{
-      owner_address: params["owner_address"],
-      receipt_address: params["recipient_address"],
-      status: "pending",
-      token_id: params["token_id"]
-    }
+    if (params === nil or not hasData(params)) do
+      conn
+      |> put_status(404)
+      |> render("error.json")
+    else
 
-    case Tokens.create_token(valid_attrs) do
-      {:ok, _} ->
-        custodial_wallet_address = Application.get_env(:nft_bridge, NftBridgeWeb.Endpoint)[:custodial_wallet_address]
-        json(conn, %{ data: %{ custodial_wallet_address: custodial_wallet_address }})
-      {:error, _} ->
-        json(conn, %{ data: %{ error: "Error processing request"}})
+      case Deposits.create_records(convertToRecord(params)) do
+        {:ok, _} ->
+          conn
+          |> put_status(200)
+          |> render("custodial_wallet_address.json", custodian_address: @custodial_wallet)
+
+        {:error, res} ->
+          conn
+          |> put_status(500)
+          |> render("error.json", res.errors)
+      end
     end
+  end
+
+  defp hasData(data) do
+    Map.has_key?(data, "chain_id")
+      and Map.has_key?(data, "owner_address")
+      and Map.has_key?(data, "recipient_address")
+      and Map.has_key?(data, "token_id")
+  end
+
+  defp convertToRecord(data) do
+    %{
+      "owner_address" => data["owner_address"],
+      "recipient_address" => data["recipient_address"],
+      "token_id" => data["token_id"],
+      "status" => "in_progress"
+    }
   end
 end

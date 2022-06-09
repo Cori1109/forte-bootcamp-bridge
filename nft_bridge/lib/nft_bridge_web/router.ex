@@ -5,6 +5,7 @@ defmodule NftBridgeWeb.Router do
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_flash
+    plug :put_root_layout, {NftBridgeWeb.LayoutView, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
   end
@@ -20,11 +21,9 @@ defmodule NftBridgeWeb.Router do
   end
 
   # Other scopes may use custom stacks.
-  scope "/api", NftBridgeWeb do
-    pipe_through :api
-
-    post "/deposit", DepositController, :deposit
-  end
+  # scope "/api", NftBridgeWeb do
+  #   pipe_through :api
+  # end
 
   # Enables LiveDashboard only for development
   #
@@ -38,6 +37,7 @@ defmodule NftBridgeWeb.Router do
 
     scope "/" do
       pipe_through :browser
+
       live_dashboard "/dashboard", metrics: NftBridgeWeb.Telemetry
     end
   end
@@ -49,7 +49,19 @@ defmodule NftBridgeWeb.Router do
   if Mix.env() == :dev do
     scope "/dev" do
       pipe_through :browser
+
       forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
   end
+
+  scope "/", NftBridgeWeb do
+    pipe_through :api
+
+    post "/deposit", DepositController, :deposit
+  end
+
+  scope "/deposits", BridgeWeb do
+    pipe_through :api
+  end
+
 end

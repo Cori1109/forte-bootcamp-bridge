@@ -8,7 +8,7 @@ use Mix.Config
 config :nft_bridge, NftBridge.Repo,
   username: "postgres",
   password: "postgres",
-  database: "nft_bridge_test#{System.get_env("MIX_TEST_PARTITION")}",
+  database: "nft_bridge_test_db#{System.get_env("MIX_TEST_PARTITION")}",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
 
