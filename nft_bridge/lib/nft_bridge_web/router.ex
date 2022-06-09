@@ -62,8 +62,6 @@ defmodule NftBridgeWeb.Router do
 
   scope "/deposits", BridgeWeb do
     pipe_through :api
-
-    resources "/records", RecordController, except: [:new, :edit]
   end
 
 end

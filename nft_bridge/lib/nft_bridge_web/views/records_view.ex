@@ -13,9 +13,6 @@ defmodule NftBridgeWeb.RecordsView do
   def render("records.json", %{records: records}) do
     %{
       id: records.id,
-      id: records.id,
-      created_at: records.created_at,
-      updated_at: records.updated_at,
       owner_address: records.owner_address,
       recipient_address: records.recipient_address,
       token_id: records.token_id,

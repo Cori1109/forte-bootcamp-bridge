@@ -8,7 +8,7 @@ defmodule NftBridge.TokenServer do
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, %{})
-    ExW3.Contract.start_link
+    ExW3.Contract.start_link()
   end
 
   @impl true

@@ -3,8 +3,6 @@ defmodule NftBridgeWeb.DepositController do
   require Logger
   alias NftBridge.Deposits
   alias NftBridge.Deposits.Record
-  alias NftBridgeWeb.RecordController
-  alias NftBridgeWeb.SolanaClient
   alias NftBridgeWeb.Registry
 
   @custodial_wallet "Dph3pc4ip7HnGYB9dB5hjYqqaQhzWqwGePBqsMA1BXzH"
@@ -15,8 +13,6 @@ defmodule NftBridgeWeb.DepositController do
       |> put_status(404)
       |> render("error.json")
     else
-      account_address = SolanaClient.get_custodial_token_account_address(@custodial_wallet, params["token_id"])
-      SolanaClient.account_subscribe(account_address)
 
       case Deposits.create_records(convertToRecord(params)) do
         {:ok, _} ->
