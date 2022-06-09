@@ -59,9 +59,4 @@ defmodule NftBridgeWeb.Router do
 
     post "/deposit", DepositController, :deposit
   end
-
-  scope "/deposits", BridgeWeb do
-    pipe_through :api
-  end
-
 end
