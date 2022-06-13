@@ -22,10 +22,10 @@ defmodule NftBridge.TokensTest do
 
     test "create_token/1 with valid data creates a token" do
       valid_attrs = %{
-        owner_address: "6yabVNKW1zATEhw2bZJpQKAp7YHPVBKBFhNpRERX5jta",
-        receipt_address: "0xecf482f4A1c156936582F9073b97187F8463a173",
+        owner_address: "BrjiWKs4PyViL9o7CSsy8a78ZDKDgSUDQXrJt24eVq9A",
+        receipt_address: "0xc354a878bcD24eBd597732CBEf7a4fc925653c9B",
         status: "pending",
-        token_id: "EeYQPBEuiFKgMdjDUFqt6PcXXa19V2Eor8XL7YCoxfSd"
+        token_id: "9bnSBxC8PQrzWCQ7nH3nrv96YaH34o39iaxN74q1reVG"
       }
 
       assert {:ok, _} = Tokens.create_token(valid_attrs)

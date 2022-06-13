@@ -21,9 +21,11 @@ defmodule NftBridgeWeb.Router do
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", NftBridgeWeb do
-  #   pipe_through :api
-  # end
+  scope "/api", NftBridgeWeb do
+    pipe_through :api
+    
+    post "/deposit", DepositController, :deposit
+  end
 
   # Enables LiveDashboard only for development
   #
@@ -53,15 +55,4 @@ defmodule NftBridgeWeb.Router do
       forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
   end
-
-  scope "/", NftBridgeWeb do
-    pipe_through :api
-
-    post "/deposit", DepositController, :deposit
-  end
-
-  scope "/deposits", BridgeWeb do
-    pipe_through :api
-  end
-
 end
