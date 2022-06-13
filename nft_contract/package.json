@@ -1,0 +1,19 @@
+{
+  "name": "nft_contract",
+  "owner": "DarleneHarrisCrypto",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@openzeppelin/contracts": "^4.5.0",
+    "chai": "^4.3.6",
+    "ganache-cli": "^6.12.2",
+    "truffle": "^5.5.10"
+  }
+}
