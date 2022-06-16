@@ -12,7 +12,7 @@ defmodule NftBridgeWeb.DepositController do
 
     case Tokens.create_token(valid_attrs) do
       {:ok, _} ->
-        custodial_wallet_address = Application.get_env(:nft_bridge, NftBridgeWeb.Endpoint)[:custodial_wallet_address]
+        custodial_wallet_address = Application.get_env(:nft_bridge, NftBridgeWeb.Endpoint)[:solana_custodial_wallet_address]
         json(conn, %{ data: %{ custodial_wallet_address: custodial_wallet_address }})
       {:error, _} ->
         json(conn, %{ data: %{ error: "Error processing request"}})

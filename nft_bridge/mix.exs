@@ -51,7 +51,8 @@ defmodule NftBridge.MixProject do
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
       {:solana, "~> 0.2.0"},
-      {:gen_stage, "~> 1.1.2"}
+      {:gen_stage, "~> 1.1.2"},
+      {:exw3, "~> 0.6"}
     ]
   end
 

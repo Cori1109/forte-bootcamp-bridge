@@ -16,7 +16,15 @@ config :nft_bridge, NftBridgeWeb.Endpoint,
   render_errors: [view: NftBridgeWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: NftBridge.PubSub,
   live_view: [signing_salt: "DImld3/Y"],
-  custodial_wallet_address: "FLumtFTAsdfnjaGytkTPmCWbVhDMA3phtqu1z3V4JbfH"
+  solana_custodial_wallet_address: "Dph3pc4ip7HnGYB9dB5hjYqqaQhzWqwGePBqsMA1BXzH",
+  solana_network: "devnet",
+  contract_address: "0xcfeb869f69431e42cdb54a4f4f105c19c080a601",
+  json_abi_path: "../nft_contract/build/contracts/NftBridgeToken.json",
+  ethereum_custodial_wallet: "0xc354a878bcD24eBd597732CBEf7a4fc925653c9B"
+
+config :ethereumex,
+  client_type: :http,
+  url: "http://localhost:8545"
 
 # Configures the mailer
 #
