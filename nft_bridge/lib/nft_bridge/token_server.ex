@@ -43,12 +43,9 @@ defmodule NftBridge.TokenServer do
     Enum.map(tokens, fn x ->
       # TODO Allow token id duplication, owner address validation.
       # This version only validates the token id for bootcamp (DO NOT USE IN PRODUCTION)
-
-      req = {"getTokenAccountsByOwner", [custodial_wallet_address, %{"mint" => x.token_id} , %{"encoding" => "jsonParsed"}]}
-
-      case Solana.RPC.send(client, req) do
+      # the actual implementation has some flaws
+      case token_in_wallet?(client, custodial_wallet_address, x.token_id) do
         {:ok, info} ->
-          IO.inspect(info)
           case Enum.empty?(info) do
             true ->
               Logger.warn("Not found")
@@ -58,7 +55,7 @@ defmodule NftBridge.TokenServer do
               #Tokens.update_status!(x.id, "received")
 
               token_id = get_token_id_from_mint(x.token_id);
-              if !minted?(token_id) do
+              if minted?(abi, token_id) == false do
                 Logger.info("Token not minted in the eth network")
 
                 metadata = get_metadata(client, x.token_id)
@@ -67,13 +64,20 @@ defmodule NftBridge.TokenServer do
                 case mint_token(abi, token_id, url, eth_custodial_wallet_address) do
                   {:ok, tx} ->
                     Logger.info("Token minted in tx " <> tx)
-                    Tokens.update_status!(x.id, "minted")
                   {:error, err} ->
                     Logger.error(err)
                 end
               else
                 Logger.info("Token already minted in the eth network")
-                # TODO
+              end
+
+              # TODO validate the actual owner of the token before the transfer
+              case transfer(abi, token_id, eth_custodial_wallet_address, x.receipt_address) do
+                {:ok, _} ->
+                  Logger.info("Token transferred to " <> x.receipt_address)
+                  Tokens.update_status!(x.id, "done")
+                {:error, err} ->
+                  Logger.error(err)
               end
           end
       end
@@ -85,14 +89,19 @@ defmodule NftBridge.TokenServer do
     {:noreply, abi}
   end
 
+  defp token_in_wallet?(client, wallet, token_id) do
+    req = {"getTokenAccountsByOwner", [wallet, %{"mint" => token_id} , %{"encoding" => "jsonParsed"}]}
+    Solana.RPC.send(client, req)
+  end
+
   defp get_token_id_from_mint(mint) do
     temp = B58.decode58!(mint) |> Base.encode16()
     {:ok, token } = ExW3.Utils.hex_to_integer("0x" <> temp)
     token
   end
 
-  defp minted?(id) do
-    case ExW3.Contract.call(:Nft, :ownerOf, [id]) do
+  defp minted?(abi, id) do
+    case eth_call_helper(abi, "ownerOf", [id]) do
       {:ok, _}  -> true
       {:error, _}  -> false
     end
@@ -109,6 +118,38 @@ defmodule NftBridge.TokenServer do
           from: to
         }
     ])
+  end
+
+  defp transfer(abi, id, from, to) do
+    #TODO check ABI to avoid force the last param
+    encoded_data = get_encoded_data(abi, "safeTransferFrom", [encode_address(from), encode_address(to), id, ""])
+
+    ExW3.Rpc.eth_send([
+        %{
+          to: ExW3.Contract.address(:Nft),
+          data: encoded_data,
+          gas: "0x30c75",
+          from: from
+        }
+    ])
+  end
+
+  defp eth_call_helper(abi, method_name, args) do
+    result =
+      ExW3.Rpc.eth_call([
+        %{
+          to: ExW3.Contract.address(:Nft),
+          data: "0x#{ExW3.Abi.encode_method_call(abi, method_name, args)}"
+        }
+      ])
+
+    case result do
+      {:ok, data} ->
+        ([:ok] ++ ExW3.Abi.decode_output(abi, method_name, data)) |> List.to_tuple()
+
+      {:error, err} ->
+        {:error, err}
+    end
   end
 
   defp get_encoded_data(abi, name, args) do
@@ -160,6 +201,6 @@ defmodule NftBridge.TokenServer do
   end
 
   defp schedule_work do
-    Process.send_after(self(), :work, 1 * 1000)
+    Process.send_after(self(), :work, 30 * 1000)
   end
 end

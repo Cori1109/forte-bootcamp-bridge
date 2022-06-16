@@ -10,7 +10,7 @@ contract('NftBridgeToken', function () {
   // Test case
   it('mint token', async function () {
 
-    const to = "0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1";
+    const to = "0xc354a878bcD24eBd597732CBEf7a4fc925653c9B";
     const token_id = 1;
     const url = "https://a6cpxhuevpzgqtyj5eotbjmqenufvktr5ohmosj3awdpbdw7kw6a.arweave.net/B4T7noSr8mhPCekdMKWQI2haqnHrjsdJOwWG8I7fVb";
 

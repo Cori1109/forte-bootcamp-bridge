@@ -18,7 +18,7 @@ config :nft_bridge, NftBridgeWeb.Endpoint,
   live_view: [signing_salt: "DImld3/Y"],
   solana_custodial_wallet_address: "Dph3pc4ip7HnGYB9dB5hjYqqaQhzWqwGePBqsMA1BXzH",
   solana_network: "devnet",
-  contract_address: "0xcfeb869f69431e42cdb54a4f4f105c19c080a601",
+  contract_address: "0xCfEB869F69431e42cdB54A4F4f105C19C080A601",
   json_abi_path: "../nft_contract/build/contracts/NftBridgeToken.json",
   ethereum_custodial_wallet: "0xc354a878bcD24eBd597732CBEf7a4fc925653c9B"
 
