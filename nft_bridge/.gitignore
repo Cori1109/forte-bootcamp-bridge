@@ -26,6 +26,7 @@ nft_bridge-*.tar
 npm-debug.log
 
 # The directory NPM downloads your dependencies sources to.
+npm -debug.log
 /assets/node_modules/
 
 # Since we are building assets from assets/,
