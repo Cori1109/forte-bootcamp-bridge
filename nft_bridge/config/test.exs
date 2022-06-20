@@ -1,4 +1,4 @@
-use Mix.Config
+use Config
 
 # Configure your database
 #
