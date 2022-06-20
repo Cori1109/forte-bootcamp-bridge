@@ -1,16 +1,52 @@
 defmodule NftBridge.Metadata do
 
-  # Metaplex metadata parser
+  # Metaplex metadata parser and encoder
   # based on
   # https://github.com/michaelhly/solana-py/issues/48#issuecomment-1073077165
   # and
   # https://github.com/metaplex-foundation/metaplex-program-library/blob/master/token-metadata/program/src/state.rs
 
 
-  defstruct [:update_authority, :mint, :primary_sale_happened, :is_mutable, :editionNonce, :tokenStandard, :collection, :uses,
+  defstruct [:key, :update_authority, :mint, :primary_sale_happened, :is_mutable, :editionNonce, :tokenStandard, :collection, :uses,
    data: { :name, :symbol, :uri, :seller_fee_basis_points, :creators }]
 
   @metadata_program_id "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+
+
+  def encode(metadata) do
+    {:ok, update_authority_enc} = B58.decode58(metadata.update_authority)
+    {:ok, mint_enc} = B58.decode58(metadata.mint)
+
+    encode_value({metadata.key, 8})
+    <> update_authority_enc
+    <> mint_enc
+    <> encode_value({metadata.data.name, "borsh"})
+    <> encode_value({metadata.data.symbol, "borsh"})
+    <> encode_value({metadata.data.uri, "borsh"})
+    <> encode_value({metadata.data.seller_fee_basis_points, 16})
+    <> encode_value(false) #has_creators
+    <> encode_value({metadata.primary_sale_happened, 8})
+    <> encode_value({metadata.is_mutable, 8})
+    <> encode_value(true)
+    <> encode_value({metadata.editionNonce, 8})
+    <> encode_value(true)
+    <> encode_value({metadata.tokenStandard, 8})
+    <> encode_value(false) #has_collections
+    <> encode_value(false) #has_uses
+  end
+
+  defp encode_value({value, "borsh"}) when is_binary(value) do
+    <<byte_size(value)::little-size(32), value::binary>>
+  end
+
+  defp encode_value({value, size}), do: encode_value({value, size, :little})
+  defp encode_value({value, size, :big}), do: <<value::size(size)-big>>
+  defp encode_value({value, size, :little}), do: <<value::size(size)-little>>
+  defp encode_value(value) when is_binary(value), do: value
+  defp encode_value(value) when is_integer(value), do: <<value>>
+  defp encode_value(value) when is_boolean(value), do: <<unary(value)>>
+
+  defp unary(val), do: if(val, do: 1, else: 0)
 
   def get_pda(id) do
     program_id = Solana.Key.decode!(@metadata_program_id)
@@ -34,6 +70,7 @@ defmodule NftBridge.Metadata do
               ) do
 
     metadata = %NftBridge.Metadata{
+      key: 4,
       update_authority: B58.encode58(source),
       mint: B58.encode58(mint),
       primary_sale_happened: -1,
