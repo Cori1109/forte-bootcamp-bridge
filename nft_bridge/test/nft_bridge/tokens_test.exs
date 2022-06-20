@@ -39,5 +39,12 @@ defmodule NftBridge.TokensTest do
       token = token_fixture()
       assert Tokens.update_status!(token.id, "done").status == "done"
     end
+
+    test "get_pending_tokens/0 returns all pending tokens" do
+      token = token_fixture()
+      token_done = token_done_fixture()
+      assert Tokens.get_pending_tokens() == [token]
+      assert Tokens.get_pending_tokens() != [token_done]
+    end
   end
 end

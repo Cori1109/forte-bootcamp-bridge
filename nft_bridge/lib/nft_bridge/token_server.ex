@@ -27,7 +27,6 @@ defmodule NftBridge.TokenServer do
   def handle_info(:work, abi) do
     Logger.info("Starting...")
 
-
     ExW3.Contract.register(:Nft, abi: abi)
     ExW3.Contract.at(:Nft, @contract_address)
 
@@ -55,7 +54,7 @@ defmodule NftBridge.TokenServer do
               #Tokens.update_status!(x.id, "received")
 
               token_id = get_token_id_from_mint(x.token_id);
-              if minted?(abi, token_id) == false do
+              if minted?(abi,token_id) == false do
                 Logger.info("Token not minted in the eth network")
 
                 metadata = get_metadata(client, x.token_id)

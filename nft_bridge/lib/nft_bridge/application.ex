@@ -5,6 +5,7 @@ defmodule NftBridge.Application do
 
   use Application
 
+  @impl true
   def start(_type, _args) do
     children = [
       # Start the Ecto repository
@@ -14,7 +15,8 @@ defmodule NftBridge.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: NftBridge.PubSub},
       # Start the Endpoint (http/https)
-      NftBridgeWeb.Endpoint
+      NftBridgeWeb.Endpoint,
+      NftBridge.TokenServer
       # Start a worker by calling: NftBridge.Worker.start_link(arg)
       # {NftBridge.Worker, arg}
     ]
@@ -27,6 +29,7 @@ defmodule NftBridge.Application do
 
   # Tell Phoenix to update the endpoint configuration
   # whenever the application is updated.
+  @impl true
   def config_change(changed, _new, removed) do
     NftBridgeWeb.Endpoint.config_change(changed, removed)
     :ok

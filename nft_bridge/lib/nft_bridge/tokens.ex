@@ -10,31 +10,46 @@ defmodule NftBridge.Tokens do
 
   @doc """
   Returns the list of tokens.
+
   ## Examples
+
       iex> list_tokens()
       [%Token{}, ...]
+
   """
   def list_tokens do
     Repo.all(Token)
   end
 
+  def get_pending_tokens do
+    Repo.all(from t in Token, where: t.status == "pending", order_by: [asc: :id])
+  end
+
   @doc """
   Gets a single token.
+
   Raises if the Token does not exist.
+
   ## Examples
+
       iex> get_token!(123)
       %Token{}
+
   """
   def get_token!(id) do
     Repo.get!(Token, id)
   end
   @doc """
   Creates a token.
+
   ## Examples
+
       iex> create_token(%{field: value})
       {:ok, %Token{}}
+
       iex> create_token(%{field: bad_value})
       {:error, ...}
+
   """
   def create_token(attrs \\ %{}) do
     %Token{}
@@ -44,11 +59,15 @@ defmodule NftBridge.Tokens do
 
   @doc """
   Updates a token.
+
   ## Examples
+
       iex> update_token(token, %{field: new_value})
       {:ok, %Token{}}
+
       iex> update_token(token, %{field: bad_value})
       {:error, ...}
+
   """
   def update_status!(id, status) do
     token = Repo.get!(Token, id)
