@@ -302,4 +302,42 @@ defmodule NftBridge.MetadataTest do
       assert pda == "4t9YYr6Z3hi9jZkLu6QvXxSUzHhdJ4jmmm9hoU5QhnqY"
     end
   end
+
+  describe "metadata encoder" do
+    import NftBridge.MetadataFixtures
+    test "encode without creators" do
+      metadata = %NftBridge.Metadata{
+        key: 4,
+        update_authority: "FzVaYRJbM65LVVLxrxv5L8pjKm6o1qAzU1L2XLxKkeqH",
+        mint: "9bnSBxC8PQrzWCQ7nH3nrv96YaH34o39iaxN74q1reVG",
+        primary_sale_happened: 1,
+        is_mutable: 1,
+        editionNonce: 253,
+        tokenStandard: 5,
+        data: %{
+          name: "Game - DevNet",
+          symbol: "GME",
+          uri: "https://arweave.net/B4T7noSr8mhPCekdMKWQI2haqnHrjsdJOwWG8I7fVbw",
+          seller_fee_basis_points: 2,
+          creators: []
+        }
+      }
+
+      encoded = Metadata.encode(metadata)
+
+      parsed = Metadata.parse(encoded)
+      assert parsed.key == 4
+      assert parsed.update_authority == "FzVaYRJbM65LVVLxrxv5L8pjKm6o1qAzU1L2XLxKkeqH"
+      assert parsed.mint == "9bnSBxC8PQrzWCQ7nH3nrv96YaH34o39iaxN74q1reVG"
+      assert parsed.data.name == "Game - DevNet"
+      assert parsed.data.symbol == "GME"
+      assert parsed.data.uri == "https://arweave.net/B4T7noSr8mhPCekdMKWQI2haqnHrjsdJOwWG8I7fVbw"
+      assert parsed.data.seller_fee_basis_points == 2
+      assert parsed.data.creators == []
+      assert parsed.primary_sale_happened == 1
+      assert parsed.is_mutable == 1
+      assert parsed.editionNonce == 253
+      assert parsed.tokenStandard == 5
+    end
+  end
 end
