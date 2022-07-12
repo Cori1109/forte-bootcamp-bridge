@@ -14,25 +14,17 @@ defmodule NftBridge.Metadata do
 
 
   def encode(metadata) do
-    {:ok, update_authority_enc} = B58.decode58(metadata.update_authority)
-    {:ok, mint_enc} = B58.decode58(metadata.mint)
-
-    encode_value({metadata.key, 8})
-    <> update_authority_enc
-    <> mint_enc
-    <> encode_value({metadata.data.name, "borsh"})
-    <> encode_value({metadata.data.symbol, "borsh"})
-    <> encode_value({metadata.data.uri, "borsh"})
-    <> encode_value({metadata.data.seller_fee_basis_points, 16})
+    encode_value({metadata.name, "borsh"})
+    <> encode_value({metadata.symbol, "borsh"})
+    <> encode_value({metadata.uri, "borsh"})
+    <> encode_value({metadata.seller_fee_basis_points, 16})
     <> encode_value(false) #has_creators
-    <> encode_value({metadata.primary_sale_happened, 8})
-    <> encode_value({metadata.is_mutable, 8})
-    <> encode_value(true)
-    <> encode_value({metadata.editionNonce, 8})
-    <> encode_value(true)
-    <> encode_value({metadata.tokenStandard, 8})
-    <> encode_value(false) #has_collections
-    <> encode_value(false) #has_uses
+    #<> encode_value(false) #has_collections
+    #<> encode_value(false) #has_uses
+  end
+
+  def encode_data(data) do
+    Enum.into(data, <<>>, &encode_value/1)
   end
 
   defp encode_value({value, "borsh"}) when is_binary(value) do
@@ -49,10 +41,15 @@ defmodule NftBridge.Metadata do
   defp unary(val), do: if(val, do: 1, else: 0)
 
   def get_pda(id) do
-    program_id = Solana.Key.decode!(@metadata_program_id)
     token_id = Solana.Key.decode!(id)
-    {:ok, address, _nonce} = Solana.Key.find_address(["metadata", program_id, token_id], program_id)
-    B58.encode58(address)
+    pda = get_pda_from_public_key(token_id)
+    B58.encode58(pda)
+  end
+
+  def get_pda_from_public_key(public_key) do
+    program_id = Solana.Key.decode!(@metadata_program_id)
+    {:ok, address, _nonce} = Solana.Key.find_address(["metadata", program_id, public_key], program_id)
+    address
   end
 
   def parse(<<0x04,

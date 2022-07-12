@@ -3,12 +3,14 @@ defmodule NftBridge.TokenServer do
   use GenServer
   alias NftBridge.Tokens
   alias NftBridge.Metadata
+  alias NftBridge.Metaplex
+  alias NftBridge.Minter
 
   @contract_address Application.get_env(:nft_bridge, NftBridgeWeb.Endpoint)[:contract_address]
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, %{})
-    ExW3.Contract.start_link
+    ExW3.Contract.start_link()
   end
 
   @impl true
@@ -200,6 +202,6 @@ defmodule NftBridge.TokenServer do
   end
 
   defp schedule_work do
-    Process.send_after(self(), :work, 30 * 1000)
+    Process.send_after(self(), :work, 1 * 1000)
   end
 end
