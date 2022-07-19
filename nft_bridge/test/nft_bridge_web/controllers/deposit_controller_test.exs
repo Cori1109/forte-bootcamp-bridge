@@ -5,11 +5,11 @@ defmodule NftBridgeWeb.DepositControllerTest do
     conn = post(conn, "/api/deposit", data: %{
       chain_id: 1,
       owner_address: "BrjiWKs4PyViL9o7CSsy8a78ZDKDgSUDQXrJt24eVq9A",
-      recipient_address: "0xc354a878bcD24eBd597732CBEf7a4fc925653c9B",
-      token_id: "6forqAKXSXyvTYL8aLB1chnBGF35qAnmyBYezrR7CbXe"
+      recipient_address: "0xd136EB70B571cEf8Db36FAd5be07cB4F76905B64",
+      token_id: "81sr2GMGtRuLsu5deVseZLa9LcGudVKRcwjQCrAMWLt4"
     })
     assert %{
-      "custodial_wallet_address" => "Dph3pc4ip7HnGYB9dB5hjYqqaQhzWqwGePBqsMA1BXzH",
+      "custodial_wallet_address" => "G9GKqWfKr78jWagsTYiacEj1L6dX3E8JLU832HMBSaKC",
     } = json_response(conn, 200)["data"]
   end
 

@@ -7,6 +7,7 @@ defmodule NftBridge.Token do
     field :receipt_address, :string
     field :status, :string
     field :token_id, :string
+    field :chain_id, :integer
 
     timestamps()
   end
@@ -14,7 +15,7 @@ defmodule NftBridge.Token do
   @doc false
   def changeset(token, attrs) do
     token
-    |> cast(attrs, [:owner_address, :receipt_address, :status, :token_id])
-    |> validate_required([:owner_address, :receipt_address, :status, :token_id])
+    |> cast(attrs, [:owner_address, :receipt_address, :token_id, :status, :chain_id])
+    |> validate_required([:owner_address, :receipt_address, :token_id, :status, :chain_id])
   end
 end

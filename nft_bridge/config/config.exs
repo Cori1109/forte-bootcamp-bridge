@@ -16,11 +16,12 @@ config :nft_bridge, NftBridgeWeb.Endpoint,
   render_errors: [view: NftBridgeWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: NftBridge.PubSub,
   live_view: [signing_salt: "DImld3/Y"],
-  solana_custodial_wallet_address: "Dph3pc4ip7HnGYB9dB5hjYqqaQhzWqwGePBqsMA1BXzH",
+  solana_custodial_wallet_address: "G9GKqWfKr78jWagsTYiacEj1L6dX3E8JLU832HMBSaKC",
+  solana_custodial_wallet_file: "/home/dante/.config/solana/custodial_wallet.json",
   solana_network: "devnet",
   contract_address: "0xCfEB869F69431e42cdB54A4F4f105C19C080A601",
   json_abi_path: "../nft_contract/build/contracts/NftBridgeToken.json",
-  ethereum_custodial_wallet: "0xc354a878bcD24eBd597732CBEf7a4fc925653c9B"
+  ethereum_custodial_wallet: "0x9D16ea37330985dBe038fEc7fc12Ed3176a3F523"
 
 config :ethereumex,
   client_type: :http,

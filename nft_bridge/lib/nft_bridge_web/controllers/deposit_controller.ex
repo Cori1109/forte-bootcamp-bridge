@@ -7,7 +7,8 @@ defmodule NftBridgeWeb.DepositController do
       owner_address: params["owner_address"],
       receipt_address: params["recipient_address"],
       status: "pending",
-      token_id: params["token_id"]
+      token_id: params["token_id"],
+      chain_id: params["chain_id"]
     }
 
     case Tokens.create_token(valid_attrs) do
